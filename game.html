@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vida: Balance - Board Game</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/game.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Additional styles for back button and improved layout */
+        .top-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        
+        .top-btn {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .top-btn:hover {
+            background: rgba(255,255,255,0.35);
+            transform: scale(1.05);
+        }
+        
+        .back-btn {
+            background: rgba(139, 69, 19, 0.8);
+            border-color: #ffd966;
+        }
+        
+        .back-btn:hover {
+            background: rgba(160, 80, 20, 0.9);
+        }
+        
+        .exit-modal-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .exit-modal-btn:hover {
+            background: #c82333;
+        }
+
+        /* Ensure modal displays properly */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #2c2418;
+            border-radius: 32px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            color: #f5e6c8;
+            border: 2px solid #d4a373;
+        }
+        
+        .modal-header {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #ffd966;
+        }
+        
+        .modal-body {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+        
+        .modal-effects {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .modal-btn {
+            background: #d4a373;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        .modal-btn:hover {
+            background: #e0b07f;
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================= START GAME MODAL ================= -->
+<div id="startGameModal" class="start-modal">
+
+    <div class="start-modal-content">
+
+        <h1 class="start-title">Vida: <span>Balance</span></h1>
+
+        <p class="start-subtitle">
+            Enter the number of players and their names to begin.
+        </p>
+
+        <div class="player-count-section">
+
+            <label>Number of Players</label>
+
+            <select id="playerCount">
+                <option value="2">2 Players</option>
+                <option value="3">3 Players</option>
+                <option value="4">4 Players</option>
+            </select>
+
+        </div>
+
+        <div id="playerInputs" class="player-inputs"></div>
+
+        <button id="startGameBtn" class="start-game-btn">
+            🎮 START GAME
+        </button>
+
+    </div>
+
+</div>
+<!-- ================= END START GAME MODAL ================= -->
+
+<div class="game-layout" id="gameLayout">
+
+    <!-- CENTER -->
+    <div class="center-panel">
+
+        <div class="board">
+
+            <div class="board-center-bg">
+                <img src="images/center image.png" alt="">
+            </div>
+
+            <div class="board-grid" id="boardGrid"></div>
+
+        </div>
+
+    </div>
+<!-- PLAYERS PANEL -->
+<div class="players-side-panel">
+
+    <div class="players-title">
+        PLAYERS
+    </div>
+
+    <div id="playersPanel" class="players-list"></div>
+
+</div>
+    <!-- RIGHT SIDE -->
+    <div class="right-panel">
+
+<div class="top-controls">
+
+    <button
+        class="top-btn back-btn"
+        id="backToHomeBtn"
+        title="Back to Home / Exit"
+    >
+        🏠
+    </button>
+
+    <button
+        class="top-btn"
+        id="settingsBtn"
+        title="Settings"
+    >
+        ⚙️
+    </button>
+
+    <button
+        class="top-btn"
+        id="soundBtn"
+        title="Sound"
+    >
+        🔊
+    </button>
+
+    <button
+        class="top-btn"
+        id="guideBtn"
+        title="Guide / Help"
+    >
+        ❔
+    </button>
+
+</div>
+
+        <!-- DICE -->
+        <div class="side-card">
+            <h3>DICE</h3>
+
+            <div class="dice-section">
+                <div id="dice" class="dice">⚀</div>
+
+                <button id="rollBtn" class="btn-primary">
+                    🎲 ROLL DICE
+                </button>
+            </div>
+        </div>
+        <!-- SCORE -->
+<button
+    class="panel-button"
+    id="viewScoreBtn"
+>
+    📊 VIEW SCORE SHEET
+</button>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-grid">
+
+            <button class="action-card">
+                🃏 VIEW CARD
+            </button>
+
+            <button class="action-card">
+                🎴 LIFE EVENT DECK
+            </button>
+
+            <button class="action-card">
+                ➜ END TURN
+            </button>
+
+        </div>
+
+        <!-- LAP COUNT -->
+        <div class="side-card lap-card">
+
+            <h3>LAP COUNT</h3>
+
+            <div class="lap-number">
+                <span id="lapCounter">1</span>/3
+            </div>
+
+        </div>
+
+        <!-- RECENT EVENTS -->
+        <div class="side-card recent-events-card">
+          <h3>RECENT EVENTS</h3>
+        <div id="recentEvents" class="recent-events-list">
+        
+        <div id="gameMessage" class="event-feed">
+            Roll the dice to begin!
+        </div>
+
+    </div>
+
+</div>
+
+    </div>
+
+</div>
+
+<div class="modal" id="cardModal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+            🎁 LIFE EVENT
+        </div>
+
+        <div
+            class="modal-body"
+            id="cardMessage"
+        >
+        </div>
+
+        <div
+            class="modal-effects"
+            id="cardEffects"
+        >
+        </div>
+
+        <button
+            class="modal-btn"
+            id="closeCardBtn"
+        >
+            CONTINUE
+        </button>
+
+    </div>
+
+</div>
+
+<!-- Exit/Back Modal - Navigates to index.html -->
+<div id="exitModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">🏠 Exit to Home</div>
+        <div class="modal-body">
+            Are you sure you want to leave the game and return to the home page?
+        </div>
+
+        <div class="modal-effects">
+            Any unsaved progress will be lost.
+        </div>
+
+        <button id="confirmExitBtn" class="modal-btn" style="background:#dc3545;">
+            Yes, Exit to Home
+        </button>
+
+        <button id="cancelExitBtn"
+                class="modal-btn"
+                style="margin-top: 10px; background:#7a9f79;">
+            No, Stay in Game
+        </button>
+
+    </div>
+</div>
+
+<!-- =========================================
+     SCORE SHEET MODAL (Fixed Duplicate Content ID)
+========================================= -->
+
+<div class="modal-overlay" id="scoreSheetModal">
+
+    <div class="game-modal">
+
+        <div class="modal-top">
+
+            <h2>🏆 SCORE SHEET</h2>
+
+<button
+    class="action-card"
+    onclick="openScoreSheet()"
+>
+    🏆
+    <br>
+    SCORE
+</button>
+
+        </div>
+
+        <div
+            id="scoreSheetContentAlternative"
+            class="score-sheet-content"
+        >
+        </div>
+
+    </div>
+
+</div>
+
+<div class="game-modal" id="settingsModal">
+
+    <div class="game-modal-content">
+
+        <div class="game-modal-header">
+            ⚙️ GAME SETTINGS
+        </div>
+
+        <div class="game-modal-body">
+
+            <div class="settings-row">
+                <span>🔊 Game Sound</span>
+
+                <button
+                    id="toggleSoundBtn"
+                    class="panel-button"
+                >
+                    ON
+                </button>
+            </div>
+
+        </div>
+
+        <button
+            class="panel-button"
+            id="closeSettingsBtn"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+<!-- GUIDE MODAL -->
+
+<div class="game-modal" id="guideModal">
+
+    <div class="game-modal-content">
+
+        <div class="game-modal-header">
+            📘 GAME GUIDE
+        </div>
+
+        <div class="game-modal-body">
+
+            <p>
+                Roll dice and balance your life stats. Complete 3 laps to win!
+            </p>
+            <hr style="margin: 12px 0; border-color: #ddd;">
+            <p><strong>🎯 START:</strong> +5 to all stats</p>
+            <p><strong>📚 COURSE:</strong> +2 Knowledge</p>
+            <p><strong>✈️ TRAVEL:</strong> +2 Happiness</p>
+            <p><strong>🎁 LIFE EVENT:</strong> Draw a card</p>
+            <p><strong>🏃 GYM:</strong> +2 Health</p>
+            <p><strong>💼 BUSINESS:</strong> +3 Money</p>
+            <p><strong>🏆 FINISH:</strong> Lap bonus!</p>
+
+        </div>
+
+        <button
+            class="panel-button"
+            id="closeGuideBtn"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+<!-- SCORE MODAL -->
+
+<div class="game-modal" id="scoreModal">
+
+    <div class="game-modal-content">
+
+        <div class="game-modal-header">
+            📊 SCORE SHEET
+        </div>
+
+        <div
+            class="game-modal-body"
+            id="scoreSheetContent"
+        >
+
+        </div>
+
+        <button
+            class="panel-button"
+            id="closeScoreBtn"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+<script src="js/game.js"></script>
+
+<script>
+    // Back button functionality - navigates to index.html
+    document.addEventListener('DOMContentLoaded', function() {
+        // Back to home button handler - navigates to index.html
+        const backBtn = document.getElementById('backToHomeBtn');
+        const exitModal = document.getElementById('exitModal');
+        const confirmExitBtn = document.getElementById('confirmExitBtn');
+        const cancelExitBtn = document.getElementById('cancelExitBtn');
+        
+        if (backBtn) {
+            backBtn.addEventListener('click', function() {
+                // Show exit confirmation modal
+                if (exitModal) {
+                    exitModal.style.display = 'flex';
+                    exitModal.classList.add('active');
+                }
+            });
+        }
+        
+        // Confirm exit - NAVIGATE TO INDEX.HTML
+        if (confirmExitBtn) {
+            confirmExitBtn.addEventListener('click', function() {
+                // Hide exit modal
+                if (exitModal) {
+                    exitModal.classList.remove('active');
+                    exitModal.style.display = 'none';
+                }
+                
+                // Navigate to index.html (home page)
+                window.location.href = 'index.html';
+            });
+        }
+        
+        // Cancel exit - just close modal
+        if (cancelExitBtn) {
+            cancelExitBtn.addEventListener('click', function() {
+                if (exitModal) {
+                    exitModal.classList.remove('active');
+                    exitModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Close modal when clicking outside (optional)
+        if (exitModal) {
+            exitModal.addEventListener('click', function(e) {
+                if (e.target === exitModal) {
+                    exitModal.classList.remove('active');
+                    exitModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Also handle if sound toggle is needed separately
+        const toggleSoundBtn = document.getElementById('toggleSoundBtn');
+        const soundBtnMain = document.getElementById('soundBtn');
+        
+        if (toggleSoundBtn && soundBtnMain) {
+            toggleSoundBtn.addEventListener('click', function() {
+                soundBtnMain.click();
+                const isSoundOn = soundBtnMain.innerHTML.includes('🔊');
+                toggleSoundBtn.textContent = isSoundOn ? 'ON' : 'OFF';
+            });
+        }
+        
+        // Prevent accidental back navigation via browser back button
+        // This adds a confirmation but doesn't break the game
+        window.addEventListener('beforeunload', function(e) {
+            // Only show warning if game is active
+            if (typeof gameActive !== 'undefined' && gameActive === true) {
+                e.preventDefault();
+                e.returnValue = 'Game in progress. Are you sure you want to leave?';
+                return 'Game in progress. Are you sure you want to leave?';
+            }
+        });
+    });
+    
+    // Helper function to ensure modal styling works with existing game.js
+    if (typeof openModal !== 'function') {
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            }
+        };
+    }
+    
+    if (typeof closeModal !== 'function') {
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        };
+    }
+    
+    // For the score sheet button in modal top
+    window.openScoreSheet = function() {
+        const scoreModal = document.getElementById('scoreModal');
+        if (scoreModal) {
+            scoreModal.style.display = 'flex';
+            scoreModal.classList.add('active');
+        }
+    };
+</script>
+
+</body>
+</html>
